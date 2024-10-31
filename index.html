@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Haunted Maze Game 🎃👻</title>
+    <style>
+      body {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-family: Arial, sans-serif;
+        background-color: #1e1e1e;
+        color: #fff;
+      }
+
+      h1 {
+        margin: 10px;
+      }
+
+      #game-container {
+        display: grid;
+        grid-template-columns: repeat(10, 40px);
+        gap: 2px;
+        margin: 20px;
+      }
+
+      .cell {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: #fff;
+        background-color: #333;
+        border-radius: 5px;
+      }
+
+      .wall {
+        background-color: #555;
+      }
+
+      .path {
+        background-color: #222;
+      }
+
+      .exit {
+        background-color: #4caf50;
+      }
+
+      #status {
+        margin-top: 20px;
+        font-size: 1.2rem;
+      }
+
+      /* Mobile Controls */
+      #controls {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        margin-top: 10px;
+      }
+
+      .control-row {
+        display: flex;
+        gap: 5px;
+      }
+
+      .control-button {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+        color: #fff;
+        background-color: #4caf50;
+        border: none;
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Adjustments for Smaller Screens */
+      @media (max-width: 600px) {
+        #game-container {
+          grid-template-columns: repeat(10, 30px);
+        }
+
+        .cell {
+          width: 30px;
+          height: 30px;
+          font-size: 1.2rem;
+        }
+
+        .control-button {
+          width: 40px;
+          height: 40px;
+          font-size: 1.2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Haunted Maze Game 🎃👻</h1>
+    <div id="instructions">
+      Use the arrow keys or tap the buttons to reach the exit without hitting
+      any ghosts!
+    </div>
+    <div id="game-container"></div>
+    <div id="status"></div>
+
+    <!-- Mobile Controls -->
+    <div id="controls">
+      <div class="control-row">
+        <button class="control-button" onclick="movePlayer(0, -1)">⬆️</button>
+      </div>
+      <div class="control-row">
+        <button class="control-button" onclick="movePlayer(-1, 0)">⬅️</button>
+        <button class="control-button" onclick="movePlayer(1, 0)">➡️</button>
+      </div>
+      <div class="control-row">
+        <button class="control-button" onclick="movePlayer(0, 1)">⬇️</button>
+      </div>
+    </div>
+    <script>
+      const gameContainer = document.getElementById("game-container");
+      const statusDiv = document.getElementById("status");
+
+      const maze = [
+        ["🧛", " ", " ", " ", " ", " ", " ", " ", " ", "⬛"],
+        ["⬛", "👻", "⬛", "⬛", "⬛", "⬛", "⬛", "👻", " ", "⬛"],
+        ["⬛", " ", " ", " ", " ", " ", " ", " ", " ", "👻"],
+        ["⬛", " ", "👻", "⬛", "⬛", "⬛", "⬛", " ", "⬛", "⬛"],
+        ["⬛", " ", " ", " ", " ", " ", "👻", " ", " ", "⬛"],
+        ["⬛", " ", "👻", "⬛", " ", "⬛", "⬛", "⬛", "⬛", "⬛"],
+        ["⬛", " ", "⬛", "⬛", " ", " ", " ", " ", "⬛", "⬛"],
+        ["⬛", " ", " ", " ", " ", "⬛", "⬛", " ", " ", "🚪"],
+      ];
+
+      const playerPosition = { x: 0, y: 0 };
+      const exitPosition = { x: 9, y: 7 };
+      const ghostPositions = [
+        { x: 1, y: 1 },
+        { x: 2, y: 7 },
+        { x: 3, y: 2 },
+      ];
+
+      function renderMaze() {
+        gameContainer.innerHTML = "";
+        maze.forEach((row, rowIndex) => {
+          row.forEach((cell, cellIndex) => {
+            const cellDiv = document.createElement("div");
+            cellDiv.classList.add("cell");
+            if (cell === "⬛") {
+              cellDiv.classList.add("wall");
+            } else if (cell === "🚪") {
+              cellDiv.classList.add("exit");
+            }
+            cellDiv.textContent = cell;
+            gameContainer.appendChild(cellDiv);
+          });
+        });
+      }
+
+      function updatePlayerPosition() {
+        maze[playerPosition.y][playerPosition.x] = "🧛";
+      }
+
+      function clearPreviousPosition(prevX, prevY) {
+        maze[prevY][prevX] = " "; // Clear the previous position
+      }
+
+      function movePlayer(dx, dy) {
+        const newX = playerPosition.x + dx;
+        const newY = playerPosition.y + dy;
+        const targetCell = maze[newY] && maze[newY][newX];
+
+        if (targetCell === "⬛" || targetCell === undefined) return; // Stop if it's a wall or out of bounds
+
+        if (targetCell === "👻") {
+          statusDiv.textContent = "You were caught by a ghost! 👻 Game Over!";
+          return;
+        }
+
+        if (targetCell === "🚪") {
+          statusDiv.textContent = "You made it to the exit! 🍬 You win!";
+          return;
+        }
+
+        clearPreviousPosition(playerPosition.x, playerPosition.y);
+        playerPosition.x = newX;
+        playerPosition.y = newY;
+        updatePlayerPosition();
+        renderMaze();
+      }
+
+      function moveGhosts() {
+        ghostPositions.forEach((ghost) => {
+          const directions = [
+            { dx: 0, dy: -1 }, // Up
+            { dx: 0, dy: 1 }, // Down
+            { dx: -1, dy: 0 }, // Left
+            { dx: 1, dy: 0 }, // Right
+          ];
+
+          const randomDirection =
+            directions[Math.floor(Math.random() * directions.length)];
+          const newX = ghost.x + randomDirection.dx;
+          const newY = ghost.y + randomDirection.dy;
+          const targetCell = maze[newY] && maze[newY][newX];
+
+          // Check for valid move
+          if (
+            targetCell !== "⬛" && // Not a wall
+            targetCell !== undefined && // Within bounds
+            targetCell !== "🧛" && // Not the player
+            !ghostPositions.some(
+              (otherGhost) => otherGhost.x === newX && otherGhost.y === newY // Not moving into another ghost
+            )
+          ) {
+            maze[ghost.y][ghost.x] = " "; // Clear old position
+            ghost.x = newX;
+            ghost.y = newY;
+            maze[ghost.y][ghost.x] = "👻"; // Update new position
+          }
+        });
+        renderMaze();
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (
+          statusDiv.textContent.includes("Game Over") ||
+          statusDiv.textContent.includes("You win")
+        )
+          return;
+        switch (event.key) {
+          case "ArrowUp":
+            movePlayer(0, -1);
+            break;
+          case "ArrowDown":
+            movePlayer(0, 1);
+            break;
+          case "ArrowLeft":
+            movePlayer(-1, 0);
+            break;
+          case "ArrowRight":
+            movePlayer(1, 0);
+            break;
+        }
+        moveGhosts(); // Move ghosts after player's turn
+      });
+
+      renderMaze();
+      setInterval(moveGhosts, 1000); // Move ghosts every second
+    </script>
+  </body>
+</html>
